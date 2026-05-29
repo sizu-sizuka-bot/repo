@@ -1,43 +1,96 @@
-exports.config = {
-  name: "fork",
-  version: "1.0.0",
-  author: "EryXenX",
-  countDown: 0,
-  role: 0,
-  shortDescription: "Fork Link",
-  longDescription: "Responds with GitHub repo link when 'fork' or 'repository' is mentioned. Cooldown: 10 seconds.",
-  category: "system",
-  guide: {
-    en: "Type 'fork' or 'repository'"
-  }
-};
+const axios = require("axios");
+const fs = require("fs-extra");
+const path = require("path");
 
-const last = {};
-const cool = 10000;
+// 🔒 AUTHOR LOCK
+const LOCKED_AUTHOR = "FARHAN-KHAN";
 
-exports.onStart = async function(){};
+module.exports = {
+  config: {
+    name: "fork",
+    aliases: ["repo", "link"],
+    version: "1.3",
+    author: LOCKED_AUTHOR,
+    countDown: 3,
+    role: 0,
+    longDescription: "Send fork with styled image",
+    category: "system",
+    guide: { en: "{pn}" }
+  },
 
-exports.onChat = async function({event: z, api: y}){
-  const t = z.threadID;
-  const n = Date.now();
-  if(last[t] && n - last[t] < cool) return;
+  onStart: async function ({ message }) {
+    try {
 
-  const m = (z.body || "").toLowerCase().trim();
-  if(!m) return;
+      // 🔒 author protection
+      if (module.exports.config.author !== LOCKED_AUTHOR) {
+        return message.reply("❌ AUTHOR LOCKED! You cannot modify this file.");
+      }
 
-  const fork = m.includes("fork") || m.includes("repository");
+      const text =
+`╔━❖🌸 𝗢𝗪𝗡𝗘𝗥 𝗙𝗢𝗥𝗞 🌸❖━╗
 
-  if(fork){
-    y.sendMessage(
-`🔗𝗚𝗶𝘁𝗛𝘂𝗯 𝗙𝗼𝗿𝗸 𝗟𝗶𝗻𝗸:
-https://github.com/EryXenX/GOAT-MESSENGER.git
+😎 এই নাও বস ফারহান এর অফিসিয়াল
+💻 𝗚𝗢𝗔𝗧 𝗙𝗢𝗥𝗞 & 𝗚𝗶𝘁𝗛𝘂𝗯 𝗟𝗜𝗡𝗞 🔥
 
-🎬 𝗦𝗲𝘁𝘂𝗽 𝗧𝘂𝘁𝗼𝗿𝗶𝗮𝗹👇🏼
-https://youtu.be/gPf_BFhQz_w?si=T1N6sB2DefeTGq2R`,
-      t,
-      z.messageID
-    );
+┏━〔 ♻️ 𝗚𝗢𝗔𝗧 𝗙𝗢𝗥𝗞 ♻️ 〕━┓
+┃ 🚀 𝗙𝗮𝘀𝘁 & 𝗦𝗺𝗼𝗼𝘁𝗵
+┃ ⚡ 𝗦𝘁𝘆𝗹𝗶𝘀𝗵 𝗦𝘆𝘀𝘁𝗲𝗺
+┃ 💎 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗘𝗱𝗶𝘁
+┗━━━━━━━━━━━━━━━━━━┛
 
-    last[t] = n;
+🔗 https://github.com/FARHAN-MIRAI-BOT/NEW-GOAT
+
+✦━━━━━━━━━━━━━━━━━━━✦
+
+🎬 𝗡𝗘𝗪 𝗧𝗨𝗧𝗢𝗥𝗜𝗔𝗟 𝗩𝗜𝗗𝗘𝗢 🎬
+
+ 🥰 এই ভিডিওটা সবাইকে শেখানোর জন্য করা হয়েছে
+ 💖 আশা করি সবাই ভিডিওটা শেষ পর্যন্ত দেখবা
+ 📖 সহজভাবে সব কিছু বুঝানো হয়েছে
+ 🤝 পাশে থাকলে আরো সুন্দর ভিডিও আসবে ইনশাআল্লাহ
+╰━━━━━━━━━━━━━━━━━━━╯
+
+📢 ভিডিওটা দেখে যদি একটু উপকার হয় 😇
+তাহলে একটা সুন্দর কমেন্ট করে পাশে থাকবা ❤️
+
+🌐 𝗩𝗜𝗗𝗘𝗢 𝗟𝗜𝗡𝗞 👇
+🔗 https://youtube.com/watch?v=vKzIu2iyg8I&feature=shared
+
+✦━━━━━━━━━━━━━━━━━━━✦
+
+🔔 𝗟𝗶𝗸𝗲 • 𝗖𝗼𝗺𝗺𝗲𝗻𝘁 • 𝗦𝘂𝗯𝘀𝗰𝗿𝗶𝗯𝗲 💖
+
+╚══❖ 🌺 𝗧𝗛𝗔𝗡𝗞 𝗬𝗢𝗨 🌺 ❖══╝`;
+
+      const imgUrl = "https://files.catbox.moe/0usiw5.jpg";
+
+      const cacheDir = path.join(__dirname, "cache");
+      const filePath = path.join(cacheDir, "fork.jpg");
+
+      // 📁 cache folder ensure
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      // 🌐 download image
+      const response = await axios.get(imgUrl, {
+        responseType: "arraybuffer"
+      });
+
+      fs.writeFileSync(filePath, Buffer.from(response.data));
+
+      // 📤 send message
+      await message.reply({
+        body: text,
+        attachment: fs.createReadStream(filePath)
+      });
+
+      // 🧹 cleanup
+      fs.unlinkSync(filePath);
+
+    } catch (err) {
+      console.error("Fork command error:", err);
+      message.reply("❌ Failed to send fork message!");
+    }
   }
 };
